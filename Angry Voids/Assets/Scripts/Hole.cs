@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class Hole : MonoBehaviour
 {
     public int _force;
+    public float _growth = .2f;
 
     readonly float _maxDragDistance = 2;
     Rigidbody _rigidbody;
@@ -15,6 +16,8 @@ public class Hole : MonoBehaviour
 
     private Vector3 screenPoint;
     private Vector3 offset;
+    public bool _launched = false;
+    private Coroutine _cr;
 
     // Start is called before the first frame update
     void Start()
@@ -27,45 +30,55 @@ public class Hole : MonoBehaviour
 
     private void OnMouseDown()
     {
-        screenPoint = Camera.main.WorldToScreenPoint(gameObject.transform.position);
-
-        offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+        if (_launched == false)
+        {
+            screenPoint = Camera.main.WorldToScreenPoint(gameObject.transform.position);
+            offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+        }
     }
 
     void OnMouseDrag()
     {
-        Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
-
-        Vector3 curPosition = _camera.ScreenToWorldPoint(curScreenPoint) + offset;
-
-        Vector2 desiredPosition = curPosition;
-        
-        float distance = Vector2.Distance(desiredPosition, _startPosition);
-        if (distance > _maxDragDistance)
+        if (_launched == false)
         {
-            Vector2 direction = desiredPosition - _startPosition;
-            direction.Normalize();
-            desiredPosition = _startPosition + direction * _maxDragDistance;
+            Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z);
+            Vector3 curPosition = _camera.ScreenToWorldPoint(curScreenPoint) + offset;
+            Vector2 desiredPosition = curPosition;
+            float distance = Vector2.Distance(desiredPosition, _startPosition);
+            if (distance > _maxDragDistance)
+            {
+                Vector2 direction = desiredPosition - _startPosition;
+                direction.Normalize();
+                desiredPosition = _startPosition + direction * _maxDragDistance;
+            }
+            if (desiredPosition.x > _startPosition.x)
+                desiredPosition.x = _startPosition.x;
+            _rigidbody.position = desiredPosition;
         }
-
-        if (desiredPosition.x > _startPosition.x)
-            desiredPosition.x = _startPosition.x;
-
-        _rigidbody.position = desiredPosition;
     }
 
     void OnMouseUp()
     {
-        Vector2 currentPosition = _rigidbody.position;
-        Vector2 direction = _startPosition - currentPosition;
-        direction.Normalize();
-        _rigidbody.isKinematic = false;
-        _rigidbody.AddForce(direction * _force);
+        if (_launched == false)
+        {
+            _launched = true;
+            Vector2 currentPosition = _rigidbody.position;
+            Vector2 direction = _startPosition - currentPosition;
+            direction.Normalize();
+            float distance = Vector2.Distance(currentPosition, _startPosition);
+            _rigidbody.isKinematic = false;
+            _rigidbody.AddForce(direction * _force * distance);
+            _cr = StartCoroutine(ResetAfterDelay());
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        StartCoroutine(ResetAfterDelay());
+        if (_launched == true)
+        {
+            StopCoroutine(_cr);
+            _cr = StartCoroutine(ResetAfterDelay());
+        }
     }
 
     IEnumerator ResetAfterDelay()
@@ -76,8 +89,9 @@ public class Hole : MonoBehaviour
 
     public void Grow()
     {
-        _rigidbody.useGravity = false;
-        _rigidbody.mass += .1f;
-        transform.localScale += new Vector3(.1f,.1f,.1f);
+        if (_launched == true)
+            _rigidbody.useGravity = false;
+        _rigidbody.mass += _growth;
+        transform.localScale += new Vector3(_growth, _growth, _growth);
     }
 }
