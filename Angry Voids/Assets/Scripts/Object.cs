@@ -28,6 +28,6 @@ public class Object : MonoBehaviour
         _dead = true;
         _animator.enabled = true;
         hole.Grow();
-        Destroy(gameObject, .5f);
+        Destroy(gameObject, .2f);
      }
 }
