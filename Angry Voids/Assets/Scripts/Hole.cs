@@ -14,6 +14,8 @@ public class Hole : MonoBehaviour
     Camera _camera;
     Vector2 _startPosition;
 
+    public bool IsDragging { get; private set; }
+
     private Vector3 screenPoint;
     private Vector3 offset;
     public bool _launched = false;
@@ -32,6 +34,7 @@ public class Hole : MonoBehaviour
     {
         if (_launched == false)
         {
+            IsDragging = true;
             screenPoint = Camera.main.WorldToScreenPoint(gameObject.transform.position);
             offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
         }
@@ -61,6 +64,7 @@ public class Hole : MonoBehaviour
     {
         if (_launched == false)
         {
+            IsDragging = false;
             _launched = true;
             Vector2 currentPosition = _rigidbody.position;
             Vector2 direction = _startPosition - currentPosition;
