@@ -13,6 +13,7 @@ public class Hole : MonoBehaviour
     Rigidbody _rigidbody;
     Camera _camera;
     Vector2 _startPosition;
+    private Object[] _objects;
 
     public bool IsDragging { get; private set; }
 
@@ -28,6 +29,7 @@ public class Hole : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.isKinematic = true;
         _startPosition = _rigidbody.position;
+        _objects = FindObjectsOfType<Object>();
     }
 
     private void OnMouseDown()
@@ -73,6 +75,8 @@ public class Hole : MonoBehaviour
             _rigidbody.isKinematic = false;
             _rigidbody.AddForce(direction * _force * distance);
             _cr = StartCoroutine(ResetAfterDelay());
+            foreach (Object obj in _objects)
+                obj.Free();
         }
     }
 

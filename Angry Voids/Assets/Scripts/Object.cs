@@ -6,11 +6,16 @@ using UnityEngine;
 public class Object : MonoBehaviour
 {
     Animator _animator;
+    private Hole _hole;
     private bool _dead = false;
+    private Rigidbody _rigidbody;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
+        _hole = FindObjectOfType<Hole>();
+        _rigidbody = GetComponent<Rigidbody>();
+        _rigidbody.isKinematic = true;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -19,15 +24,20 @@ public class Object : MonoBehaviour
         if (hole != null)
         {
             if (_dead == false)
-                Die(hole);
+                Die();
         }
     }
 
-     void Die(Hole hole)
+     void Die()
      {
         _dead = true;
         _animator.enabled = true;
-        hole.Grow();
+        _hole.Grow();
         Destroy(gameObject, .2f);
      }
+
+    public void Free()
+    {
+        _rigidbody.isKinematic = false;
+    }
 }
