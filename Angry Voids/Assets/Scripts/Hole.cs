@@ -11,6 +11,7 @@ public class Hole : MonoBehaviour
 
     readonly float _maxDragDistance = 2;
     Rigidbody _rigidbody;
+    private GameObject click;
     Camera _camera;
     Vector2 _startPosition;
     private Object[] _objects;
@@ -25,6 +26,7 @@ public class Hole : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        click = GameObject.Find("Click");
         _camera = Camera.main;
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.isKinematic = true;
@@ -36,9 +38,12 @@ public class Hole : MonoBehaviour
     {
         if (_launched == false)
         {
+            if (click)
+                Destroy(click);
             IsDragging = true;
             screenPoint = Camera.main.WorldToScreenPoint(gameObject.transform.position);
             offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, screenPoint.z));
+            
         }
     }
 
